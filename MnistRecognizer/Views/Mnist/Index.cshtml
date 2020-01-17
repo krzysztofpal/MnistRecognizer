@@ -1,0 +1,145 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+}
+
+<link rel="stylesheet" type="text/css" href="/Paint/mainstyle.css">
+<script src="/Paint/paint.js"></script>
+<script>
+    function canvas_clear() {
+        let canvas = $("canvas")[0];
+        canvas.getContext('2d').clearRect(0,0,28,28)
+    }
+    function post_to_server() {
+        let s = canvas.toDataURL();
+        let base64 = s.substr(s.indexOf(',') + 1);
+
+        let image_class = parseInt($("#image-class").val());
+
+        let tosend = {
+            Base64: base64,
+            Number: image_class
+        };
+
+        let json = JSON.stringify(tosend);
+
+
+        $("#results").show();
+        $("#loading").show();
+        $("#ready").hide();
+
+        $.ajax({
+            url: "/Mnist/SaveImage",
+            method: "POST",
+            contentType: "application/json",
+            data: json,
+            success: function (data) {
+                $("#loading").hide();
+                $("#ready").show();
+
+                let _class = 0;
+                let accuracy = 0;
+                for (let i = 0; i < data.length; i++) {
+                    $("#td-" + i).text(Math.round(data[i] * 100) + " %");
+                    if (data[i] > accuracy) {
+                        _class = i;
+                        accuracy = data[i];
+                    }
+                }
+
+                $("#result-class").text(_class);
+                $("#result-accuracy").text(Math.round(accuracy * 100) + " %");
+
+                if (_class === image_class) {
+                    $("#fine-result").show();
+                    $("#wrong-result").hide();
+                }
+                else {
+                    $("#fine-result").hide();
+                    $("#wrong-result").show();
+                }
+            }
+        })
+    }
+</script>
+
+<div class="wrapper">
+
+   <table>
+       <tbody>
+           <tr>
+               <td rowspan="2">
+                   <div style="width: 144px; height: 144px">
+                       <canvas id="my-canvas" width="28" height="28"></canvas>
+                   </div>
+               </td>
+               <td style="padding-left: 20px;">
+                   <strong>Liczba wpisana: </strong>
+                   <input id="image-class" type="text" />
+               </td>
+           </tr>
+           <tr>
+               <td style="padding-left: 20px;">
+                   <button class="btn btn-primary" onclick="post_to_server()">Wyślij obrazek!</button>
+               </td>
+           </tr>
+       </tbody>
+   </table>
+    <div id="results" style="display: none; padding-top: 20px;">
+        <div id="loading" style="font-style:italic">Trwa przetwarzanie...</div>
+        <div id="ready">
+            <div>
+                Obrazek został zinterpretowany jako: <strong id="result-class"></strong> z <strong id="result-accuracy"></strong> dokładnością.
+            </div>
+            <div id="fine-result" class="alert-success" style="margin-top: 20px;">
+                Udało się!
+            </div>
+            <div id="wrong-result" class="alert-warning" style="margin-top: 20px;">
+                Wygląda na to, że wciąż musimy potrenować naszą sieć neuronową...
+            </div>
+            <div style="padding-top: 20px;">
+                <div>Wyniki interpretacji: </div>
+                <div>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>0</th>
+                                <th>1</th>
+                                <th>2</th>
+                                <th>3</th>
+                                <th>4</th>
+                                <th>5</th>
+                                <th>6</th>
+                                <th>7</th>
+                                <th>8</th>
+                                <th>9</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td id="td-0"></td>
+                                <td id="td-1"></td>
+                                <td id="td-2"></td>
+                                <td id="td-3"></td>
+                                <td id="td-4"></td>
+                                <td id="td-5"></td>
+                                <td id="td-6"></td>
+                                <td id="td-7"></td>
+                                <td id="td-8"></td>
+                                <td id="td-9"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div style="padding-top: 20px;">
+                Dziękujemy za udział w badaniu i zapraszamy do dalszego wysyłania!
+            </div>
+            <div style="padding-top: 20px;">
+                @Html.ActionLink("Powtórz badanie!", "Index", "Mnist")
+            </div>
+        </div>
+    </div>
+    
+
+</div>

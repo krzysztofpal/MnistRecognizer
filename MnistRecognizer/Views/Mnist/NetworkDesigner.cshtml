@@ -1,0 +1,118 @@
+﻿
+@{
+    ViewData["Title"] = "NetworkDesigner";
+}
+
+<h1>Projektowanie sieci</h1>
+<h4>
+    Masz propozycję architektury sieci neuronowej, która mogłaby nam pomóc w zadaniu? Zapisz ją tutaj i wyślij!
+    Bardzo nam w ten sposób pomożesz!
+</h4>
+
+<script>
+    function send() {
+        var tosend = {
+            Layers: [
+                {
+                    KernelLength: parseInt($("#first-kernel-length").val()),
+                    KernelWidth: parseInt($("#first-kernel-width").val()),
+                    Stride: parseInt($("#first-kernel-stride").val()),
+                    Padding: parseInt($("#first-kernel-padding").val())
+                },
+                {
+                    KernelLength: parseInt($("#secound-kernel-length").val()),
+                    KernelWidth: parseInt($("#secound-kernel-width").val()),
+                    Stride: parseInt($("#secound-kernel-stride").val()),
+                    Padding: parseInt($("#secound-kernel-padding").val())
+                }
+            ]
+        }
+
+        $.ajax({
+            url: "/Mnist/SaveNetwork",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(tosend),
+            success: function () {
+                alert("Propozycja sieci została zapisana. Dziękujemy za współpracę!");
+            }
+        })
+    }
+</script>
+<style>
+    td{
+        padding: 5px;
+    }
+</style>
+
+<div style="padding-top: 20px;">
+    <div>
+        <div>
+            <strong>Wejście</strong>: <strong>28x28</strong> liczb typu double (monochromatyczny obraz)
+        </div>
+        <div style="padding-top: 10px;">
+            <table>
+                <tbody>
+                    <tr>
+                        <td colspan="2" style="font-weight: bold">Pierwsza warstwa konwolucyjna: </td>
+                    </tr>
+                    <tr>
+                        <td>Długość kernela</td>
+                        <td>
+                            <input type="number" id="first-kernel-length" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Szerokość kernela</td>
+                        <td>
+                            <input type="number" id="first-kernel-width" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Parametr stride</td>
+                        <td>
+                            <input type="number" id="first-kernel-stride" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Parametr padding</td>
+                        <td>
+                            <input type="number" id="first-kernel-padding" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="font-weight: bold">Druga warstwa konwolucyjna: </td>
+                    </tr>
+                    <tr>
+                        <td>Długość kernela</td>
+                        <td>
+                            <input type="number" id="secound-kernel-length" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Szerokość kernela</td>
+                        <td>
+                            <input type="number" id="secound-kernel-width" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Parametr stride</td>
+                        <td>
+                            <input type="number" id="secound-kernel-stride" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Parametr padding</td>
+                        <td>
+                            <input type="number" id="secound-kernel-padding" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div>
+        <button class="btn btn-primary" onclick="send()">Wyślij!</button>
+    </div>
+</div>
+
