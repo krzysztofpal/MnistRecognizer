@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using MnistRecognizer.Models;
+using MnistRecognizer.Modules.Database;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -18,41 +20,39 @@ namespace MnistRecognizer.Modules.Storage
             this.host = host ?? throw new ArgumentNullException(nameof(host));
         }
 
-        public void Save(SaveNetworkModel model)
+        public void Save(NetworkModel model, Db db)
         {
-            string folder = Path.Combine(host.ContentRootPath, "network-proposals-storage");
-
-            if (Directory.Exists(folder) == false)
-                Directory.CreateDirectory(folder);
-
-            string file_path = Path.Combine(folder, Guid.NewGuid().ToString());
-
-            var json = JsonConvert.SerializeObject(model);
-
-            File.WriteAllText(file_path + ".json", json);
+            db.Entry(model).State = Microsoft.EntityFrameworkCore.EntityState.Added;
+            db.SaveChanges();
+            db.Entry(model).GetDatabaseValues();
+            model.Layers.ToList().ForEach(x => x.NetworkID = model.ID);
+            model.Layers.ToList().ForEach(x => db.Entry(x).State = Microsoft.EntityFrameworkCore.EntityState.Added);
+            db.SaveChanges();
         }
 
-        public List<SaveNetworkModel> GetModels()
+        public List<NetworkModel> GetModels(Db db)
         {
-            string folder = Path.Combine(host.ContentRootPath, "network-proposals-storage");
+            var n = db.Networks.Include(x=>x.Layers).Where(x=>x.Layers != null && x.Layers.Count >= 2).ToList();
+            n.ForEach(x => x.Layers.ForEach(y => y.Network = null));
+            return n;
+        }
 
-            if (Directory.Exists(folder) == false)
-                return null;
+        /// <summary>
+        /// Generates JSON file from all the history
+        /// </summary>
+        /// <returns></returns>
+        public string Zip(Db db)
+        {
+            var models = GetModels(db);
 
-            var models = new List<SaveNetworkModel>();
+            string temp = Path.Combine(host.ContentRootPath, "temp.json");
+            if (File.Exists(temp))
+                File.Delete(temp);
 
-            foreach(var file in Directory.GetFiles(folder))
-            {
-                try
-                {
-                    var json = File.ReadAllText(file);
-                    var o = JsonConvert.DeserializeObject<SaveNetworkModel>(json);
-                    models.Add(o);
-                }
-                catch (Exception) { }
-            }
+            var json = JsonConvert.SerializeObject(models);
+            File.WriteAllText(temp, json);
 
-            return models;
+            return temp;
         }
     }
 }

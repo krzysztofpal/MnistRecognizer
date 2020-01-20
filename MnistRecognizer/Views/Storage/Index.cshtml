@@ -1,7 +1,53 @@
-﻿
+﻿@model MnistRecognizer.Models.Layer
+
 @{
-    ViewData["Title"] = "Index";
+    ViewBag.Title = "JSON Details";
 }
 
-<h1>Index</h1>
+@section Scripts{
+    <script type="text/javascript">
+        $.ajax({
+            url: "/Storage/GetFiles",
+            type: 'get',
+            cache: false,
+            success: function (data) {
+                var event_data = '';
+                for (var i = 0; i < data.length; i++) {
+                    var file = data[i];
+                    var layer1 = file.layers[0];
+                    var layer2 = file.layers[1];
 
+                    event_data += '<tr>';
+                    event_data += '<td>' + layer1.kernelLength + '</td>';
+                    event_data += '<td>' + layer1.kernelWidth + '</td>';
+                    event_data += '<td>' + layer1.stride + '</td>';
+                    event_data += '<td>' + layer1.padding + '</td>';
+                    event_data += '<td>' + layer2.kernelLength + '</td>';
+                    event_data += '<td>' + layer2.kernelWidth + '</td>';
+                    event_data += '<td>' + layer2.stride + '</td>';
+                    event_data += '<td>' + layer2.padding + '</td>';
+                    event_data += '</tr>';
+                }
+
+                $("#myjson").append(event_data);
+            },
+            error: function (d) {
+                alert("404. Please wait until the File is Loaded.");
+            }
+        });
+    </script>
+}
+
+@Html.ActionLink("Pobierz", "Zip")
+<table style="margin-top: 20px;" class="table table-responsive table-hover table-bordered" id="myjson">
+    <tr>
+        <th>Wysokość kernela 1</th>
+        <th>Szerokość kernela 1</th>
+        <th>Stride kernela 1</th>
+        <th>Padding kernela 1</th>
+        <th>Wysokość kernela 2</th>
+        <th>Szerokość kernela 2</th>
+        <th>Stride kernela 2</th>
+        <th>Padding kernela 2</th>
+    </tr>
+</table>

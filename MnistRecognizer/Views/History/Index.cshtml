@@ -1,0 +1,117 @@
+﻿
+@{
+    ViewData["Title"] = "Historia";
+}
+
+<h1>History</h1>
+@section Scripts{ 
+<style>
+    p{
+        display: inline-block;
+        padding: 20px;
+        padding-left: 0px;
+    }
+</style>
+<script>
+
+        $("#histories").show();
+        $("#loading").show();
+        $("#ready").hide();
+
+
+        $.ajax({
+            url: "/Mnist/History", 
+            method: "GET",
+            success: function (history) {
+                $("#loading").hide();
+                $("#ready").show();
+                
+                var datos = history;
+                $("#List").html('');
+                var list = '';
+
+                $.each(datos, function (i, elementListy) {
+
+                    elementListy.results = elementListy.results.map(x => Math.round(parseFloat(x) * 1000) / 10);
+                    list +=  '<tr>'
+                    list += '<td class="image"><img src="/gallery/getimage?type=' + elementListy.numerPrzedstawiany + '&name=' + elementListy.nazwaObrazka + '" alt="" border=3 height=50 width=50></td>';
+                    list += '<td class="zero">'+elementListy.results[0] +'%</td>'
+                    list += '<td class="one">'+elementListy.results[1] +'%</td>'
+                    list += '<td class="two">'+elementListy.results[2] +'%</td>'
+                    list += '<td class="three">'+elementListy.results[3] +'%</td>'
+                    list += '<td class="four">'+elementListy.results[4] +'%</td>'
+                    list += '<td class="five">'+elementListy.results[5] +'%</td>'
+                    list += '<td class="six">'+elementListy.results[6] +'%</td>'
+                    list += '<td class="seven">'+elementListy.results[7] +'%</td>'
+                    list += '<td class="eight">'+elementListy.results[8] +'%</td>'
+                    list += '<td class="nine">' + elementListy.results[9] + '%</td>'
+                    if (elementListy.results.indexOf(Math.max(...elementListy.results)) == elementListy.numerPrzedstawiany) {
+                        list += '<td class="outcome"><span style="color:green;font-weight:bold">Sukces</span></td>'
+                    }
+                    else {
+                        list += '<td class="outcome"><span style="color:red;font-weight:bold">Porażka</span></td>'
+                    }
+                    list += '</tr>'
+                    
+                }); 
+                $("#List").append(list);
+            }
+            
+        })
+        $("input:checkbox:not(:checked)").each(function() {
+            var column = "table ." + $(this).attr("name");
+            $(column).hide();
+        });
+
+        $("input:checkbox").click(function(){
+            var column = "table ." + $(this).attr("name");
+            $(column).toggle();
+        });
+
+</script>
+}
+
+<div>
+    <div id="histories" style="display: none; padding-top: 20px;">
+        <div id="loading" style="font-style:italic">Trwa przetwarzanie...</div>
+        <div id="ready">
+            <div style="padding-top: 20px;">
+                <div>
+                    <p><input type="checkbox" name="image" checked="checked" /> Obrazy</p>
+                    <p><input type="checkbox" name="zero" checked="checked" /> 0</p>
+                    <p><input type="checkbox" name="one" checked="checked" /> 1</p>
+                    <p><input type="checkbox" name="two" checked="checked" /> 2</p>
+                    <p><input type="checkbox" name="three" checked="checked" /> 3</p>
+                    <p><input type="checkbox" name="four" checked="checked" /> 4</p>
+                    <p><input type="checkbox" name="five" checked="checked" /> 5</p>
+                    <p><input type="checkbox" name="six" checked="checked" /> 6</p>
+                    <p><input type="checkbox" name="seven" checked="checked" /> 7</p>
+                    <p><input type="checkbox" name="eight" checked="checked" /> 8</p>
+                    <p><input type="checkbox" name="nine" checked="checked" /> 9</p>
+                    <p><input type="checkbox" name="outcome" checked="checked" /> Wynik</p>
+
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="image">Obraz</th>
+                                <th class="zero">0</th>
+                                <th class="one">1</th>
+                                <th class="two">2</th>
+                                <th class="three">3</th>
+                                <th class="four">4</th>
+                                <th class="five">5</th>
+                                <th class="six">6</th>
+                                <th class="seven">7</th>
+                                <th class="eight">8</th>
+                                <th class="nine">9</th>
+                                <th class="outcome">Wynik</th>
+                            </tr>
+                        </thead>
+                        <tbody id="List">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
